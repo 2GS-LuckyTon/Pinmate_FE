@@ -39,6 +39,10 @@ dependencies:
   google_maps_flutter_web: ^0.5.10
   flutter_screenutil: ^5.8.4
   location: ^7.0.1
+  place_picker:
+    git:
+      url: https://github.com/blackmann/locationpicker.git
+      ref: master  # 또는 최신 커밋 해시
 
 dev_dependencies:
   flutter_test:

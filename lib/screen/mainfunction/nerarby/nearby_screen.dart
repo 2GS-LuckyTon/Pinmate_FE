@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
-import 'package:shared_map_app/main.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import './search_detail_screen.dart';
-
 
 
 class NearbyScreen extends StatefulWidget {
@@ -28,10 +26,45 @@ class _NearbyScreenState extends State<NearbyScreen> {
   bool isDarkMode = false; // 야간 모드 상태를 저장하는 변수
   String? _darkMapStyle; // 야간 모드 스타일
 
+
+  // 마커를 저장하는 Set
+  Set<Marker> _markers = {};
+
+  final List<Map<String, dynamic>> _foodies = [
+    {
+      "name": "정통집",
+      "latitude": 37.3898445,
+      "longitude": 126.7392103,
+    },
+    {
+      "name": "정돈",
+      "latitude": 37.5039059,
+      "longitude": 127.0263972,
+    },
+    {
+      "name": "파이브가이즈",
+      "latitude": 37.5012238,
+      "longitude": 127.0256401,
+    },
+  ];
+
   void initState() {
     super.initState();
     _loadDarkMapStyle(); // 야간 모드 스타일 불러오기
+    _initializeMarkers(); // 마커 초기화
   }
+
+  // 마커 초기화 함수
+  void _initializeMarkers() {
+    _markers = _foodies.map((e) {
+      return Marker(
+        markerId: MarkerId(e['name'] as String),
+        position: LatLng(e['latitude'] as double, e['longitude'] as double),
+        infoWindow: InfoWindow(title: e['name'] as String),
+      );
+    }).toSet();
+  }
+
 
   Future<void> _loadDarkMapStyle() async {
     _darkMapStyle = await rootBundle.loadString('assets/dark.json');
@@ -66,7 +99,6 @@ class _NearbyScreenState extends State<NearbyScreen> {
   Future<void> _goToCurrentLocation() async {
     await _getPermission(); // 위치 권한 요청
     _currentLocation = await location.getLocation(); // 현재 위치 가져오기
-
     if (_currentLocation != null) {
       mapController.animateCamera(
         CameraUpdate.newCameraPosition(
@@ -86,6 +118,47 @@ class _NearbyScreenState extends State<NearbyScreen> {
     });
   }
 
+  // 특정 위치에 마커 추가 여부를 묻는 다이얼로그 표시 함수
+  void _showMarkerDialog(LatLng tappedPoint) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('마커 추가'),
+          content: Text('이 위치에 마커를 추가하시겠습니까?\n위도: ${tappedPoint.latitude}, 경도: ${tappedPoint.longitude}'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // 다이얼로그 닫기
+              },
+              child: Text('취소'),
+            ),
+            TextButton(
+              onPressed: () {
+                _addMarker(tappedPoint); // 마커 추가 함수 호출
+                Navigator.of(context).pop(); // 다이얼로그 닫기
+              },
+              child: Text('추가'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // 지도에서 특정 위치에 마커를 추가하는 함수
+  void _addMarker(LatLng position) {
+    setState(() {
+      _markers.add(
+        Marker(
+          markerId: MarkerId(position.toString()),
+          position: position,
+          infoWindow: InfoWindow(title: "선택한 위치"),
+        ),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -98,9 +171,11 @@ class _NearbyScreenState extends State<NearbyScreen> {
                 zoom: 5.0,
 
               ),
+              markers: _markers,
               myLocationEnabled: true, // 사용자 위치 표시
               myLocationButtonEnabled: false, // 사용자 위치
-              zoomControlsEnabled: false
+              zoomControlsEnabled: false,
+              onTap: _showMarkerDialog, // 지도 탭 시 다이얼로그 표시
             ),
           ),
           Positioned(
