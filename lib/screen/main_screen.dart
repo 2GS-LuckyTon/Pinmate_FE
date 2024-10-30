@@ -30,7 +30,6 @@ class _MainScreenState extends State<MainScreen> {
       bottomNavigationBar: Container(
         color: Colors.white, //색상
         height: 80,
-        padding: EdgeInsets.only(bottom: 10, top: 5),
         child: BottomNavigationBar(
           currentIndex: current_index,
           onTap: (index) {
