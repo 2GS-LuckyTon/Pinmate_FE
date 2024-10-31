@@ -395,25 +395,6 @@ class _NearbyScreenState extends State<NearbyScreen> {
             ),
           ),
         ),
-        DraggableScrollableSheet(
-          // 화면 비율로 높이 조정
-          initialChildSize: 0.4,
-          minChildSize: 0.4,
-          maxChildSize: 1.0,
-          builder: (BuildContext context, ScrollController scrollController) {
-            return SingleChildScrollView(
-              controller: scrollController,
-              child: Container(
-                  height: 1500,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20)),
-                      color: Colors.purpleAccent),
-                  child: SavedScreen()),
-            );
-          },
-        )
       ],
     );
   }
