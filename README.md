@@ -24,3 +24,12 @@ dependency
 ##위치
 -flutter pub add location
 
+
+###
+cupertino_icons: ^1.0.8
+google_maps_flutter: ^2.9.0
+google_maps_flutter_web: ^0.5.10
+http: ^0.13.5
+flutter_screenutil: ^5.8.4
+location: ^7.0.1
+

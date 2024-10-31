@@ -5,7 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import './search_detail_screen.dart';
-
+import '../saved/saved_screen.dart';
 
 class NearbyScreen extends StatefulWidget {
   const NearbyScreen({super.key});
@@ -13,8 +13,6 @@ class NearbyScreen extends StatefulWidget {
   @override
   State<NearbyScreen> createState() => _NearbyScreenState();
 }
-
-
 
 class _NearbyScreenState extends State<NearbyScreen> {
   late GoogleMapController mapController;
@@ -26,6 +24,9 @@ class _NearbyScreenState extends State<NearbyScreen> {
   bool isDarkMode = false; // 야간 모드 상태를 저장하는 변수
   String? _darkMapStyle; // 야간 모드 스타일
 
+  TextEditingController _memoController = TextEditingController();
+
+  bool isBookMarkView = true;
 
   // 마커를 저장하는 Set
   Set<Marker> _markers = {};
@@ -64,7 +65,6 @@ class _NearbyScreenState extends State<NearbyScreen> {
       );
     }).toSet();
   }
-
 
   Future<void> _loadDarkMapStyle() async {
     _darkMapStyle = await rootBundle.loadString('assets/dark.json');
@@ -111,6 +111,30 @@ class _NearbyScreenState extends State<NearbyScreen> {
       );
     }
   }
+
+  // void _onMapTap(LatLng tappedPoint) async {
+  //   // 탭한 위치 근처의 장소 ID 얻기
+  //   final placeId = await getPlaceIdFromLocation(tappedPoint); // 장소 ID 가져오기 메서드 정의
+  //   if (placeId != null) {
+  //     final placeDetails = await fetchPlaceDetails(placeId); // 장소 세부 정보 가져오기 메서드 정의
+  //     showPlaceInfoDialog(placeDetails); // 정보를 다이얼로그에 표시
+  //   }
+  // }
+  // // 장소 세부 정보를 Places API로 가져오기
+  // Future<Map<String, dynamic>> fetchPlaceDetails(String placeId) async {
+  //   final apiKey = 'AIzaSyBbpuoayD7-LKWoLxOzsO5ZN5Zv_AT2teI';
+  //   final url = 'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$apiKey';
+  //   final response = await http.get(Uri.parse(url));
+  //
+  //   if (response.statusCode == 200) {
+  //     return jsonDecode(response.body)['result'];
+  //   } else {
+  //     throw Exception("장소 세부 정보를 불러오지 못했습니다.");
+  //   }
+  // }
+
+
+
   void _toggleMapStyle() {
     setState(() {
       isDarkMode = !isDarkMode;
@@ -125,7 +149,20 @@ class _NearbyScreenState extends State<NearbyScreen> {
       builder: (context) {
         return AlertDialog(
           title: Text('마커 추가'),
-          content: Text('이 위치에 마커를 추가하시겠습니까?\n위도: ${tappedPoint.latitude}, 경도: ${tappedPoint.longitude}'),
+          content: Container(
+            height: 0.3.sw,
+            child: Column(
+              children: [
+                Text('이 위치에 마커를 추가하시겠습니까?'),
+                TextField(
+                  controller: _memoController,
+                  decoration: InputDecoration(
+                    hintText: '한줄 메모',
+                  ),
+                ),
+              ],
+            ),
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -135,7 +172,7 @@ class _NearbyScreenState extends State<NearbyScreen> {
             ),
             TextButton(
               onPressed: () {
-                _addMarker(tappedPoint); // 마커 추가 함수 호출
+                _addMarker(tappedPoint, _memoController.text); // 마커 추가 함수 호출
                 Navigator.of(context).pop(); // 다이얼로그 닫기
               },
               child: Text('추가'),
@@ -146,131 +183,130 @@ class _NearbyScreenState extends State<NearbyScreen> {
     );
   }
 
-  // 지도에서 특정 위치에 마커를 추가하는 함수
-  void _addMarker(LatLng position) {
+  // 그냥 위치 추가 마크
+  void _addMarker(LatLng position, String memo) {
     setState(() {
       _markers.add(
         Marker(
-          markerId: MarkerId(position.toString()),
-          position: position,
-          infoWindow: InfoWindow(title: "선택한 위치"),
-        ),
+            markerId: MarkerId(position.toString()),
+            position: position,
+            infoWindow: InfoWindow(
+              title: "북마크 이름",
+              snippet: memo, // 추가한 메모를 표시,
+            )),
+      );
+      //더미데이터에 추가
+      _foodies.add({
+        "name": memo,
+        "latitude": position.latitude,
+        "longitude": position.longitude,
+      });
+    });
+  }
+  //검색 위치 추가 마크
+  void _addMarker_search(LatLng position, String memo) {
+    setState(() {
+      _markers.add(
+        Marker(
+            markerId: MarkerId(position.toString()),
+            position: position,
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue), // 파란색 마커 설정
+            infoWindow: InfoWindow(
+              title: memo,
+            )),
       );
     });
   }
 
+
+  //search 한거 지도로 위치 옮김
+  Future<void> _openSearchDetailScreen() async {
+    // 현재 지도 위치를 가져옵니다
+    final currentPosition = await location.getLocation(); // 현재 위치 가져오기
+
+    final result = await Navigator.push(
+      context,
+      CupertinoPageRoute(
+        builder: (context) => SearchDetailScreen(
+          latitude: currentPosition!.latitude!,
+          longitude: currentPosition!.longitude!,
+        ),
+      ),
+    );
+
+    if (result != null) {
+      final latitude = result['latitude'];
+      final longitude = result['longitude'];
+      final name = result['name'];
+
+      mapController.animateCamera(
+        CameraUpdate.newLatLng(LatLng(latitude, longitude))
+      );
+
+      _addMarker_search(LatLng(latitude, longitude), name);
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Stack(
-        children: [
-          Container(
-            child: GoogleMap(
-              onMapCreated: _onMapCreated,
-              initialCameraPosition: CameraPosition(
-                target: _center,
-                zoom: 5.0,
-
-              ),
-              markers: _markers,
-              myLocationEnabled: true, // 사용자 위치 표시
-              myLocationButtonEnabled: false, // 사용자 위치
-              zoomControlsEnabled: false,
-              onTap: _showMarkerDialog, // 지도 탭 시 다이얼로그 표시
+      children: [
+        Container(
+          child: GoogleMap(
+            onMapCreated: _onMapCreated,
+            initialCameraPosition: CameraPosition(
+              target: _center,
+              zoom: 5.0,
             ),
+            markers: isBookMarkView ? _markers : <Marker>{},
+            myLocationEnabled: true,
+            // 사용자 위치 표시
+            myLocationButtonEnabled: false,
+            // 사용자 위치
+            zoomControlsEnabled: false,
+            //onTap: isBookMarkView? _showMarkerDialog : _onMapTap, // 지도 탭 시 다이얼로그 표시
+            onTap: _showMarkerDialog  // 지도 탭 시 다이얼로그 표시
           ),
-          Positioned(
-            right: 10.0,
-            top: 100.0,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 5,
-                    blurRadius: 7,
-                    offset: Offset(0, 3), // changes position of shadow
-                  ),
-                ],
-              ),
-              child: FloatingActionButton(
-                mini: true, // 버튼 사이즈를 줄임
-                onPressed: _toggleMapStyle,//정정해야야야야야야야
-                backgroundColor: isDarkMode ? Colors.grey : Colors.white,
-                child: Icon(
-                    Icons.star,
-                    color: Colors.amber,
-                ),
-              ),
-            ),
-          )
-          ,
-          Positioned(
-            bottom: 20.0,
-            right: 10.0,
-            child: Column(
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 5,
-                        blurRadius: 7,
-                        offset: Offset(0, 3), // changes position of shadow
-                      ),
-                    ],
-                  ),
-                  child: FloatingActionButton(
-                    onPressed: _toggleMapStyle,
-                    backgroundColor: isDarkMode ? Colors.grey : Colors.white,
-                    child: Icon(
-                        isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                        color: isDarkMode ?  Colors.amber : Colors.red
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10), // 버튼 간 간격
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 5,
-                        blurRadius: 7,
-                        offset: Offset(0, 3), // changes position of shadow
-                      ),
-                    ],
-                  ),
-                  child: FloatingActionButton(
-                    onPressed: _goToCurrentLocation,
-                    backgroundColor: isDarkMode ? Colors.grey : Colors.white,
-                    child: Icon(Icons.my_location, color: Colors.red),
-                  ),
+        ),
+        Positioned(
+          right: 10.0,
+          top: 100.0,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.5),
+                  spreadRadius: 5,
+                  blurRadius: 7,
+                  offset: Offset(0, 3), // changes position of shadow
                 ),
               ],
             ),
-          ),
-          Positioned(
-            top: 20,
-            left: 5, // 좌측 여백
-            right: 5, // 우측 여백
-            child: CupertinoButton(
+            child: FloatingActionButton(
+              mini: true, // 버튼 사이즈를 줄임
               onPressed: () {
-                Navigator.push(
-                  context,
-                  CupertinoPageRoute(builder: (context) => SearchDetailScreen()),
-                );
-              },
-              child: Container(
-                width: 0.95.sw,
-                height: 44,
-                padding: EdgeInsets.symmetric(horizontal: 16), // 아이콘과 텍스트의 좌우 간격
+                setState(() {
+                  isBookMarkView=!isBookMarkView;
+                });
+              }, //정정해야야야야야야야
+              backgroundColor: isBookMarkView ? Colors.grey : Colors.white,
+              child: Icon(
+                Icons.star,
+                color: Colors.amber,
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 20.0,
+          right: 10.0,
+          child: Column(
+            children: [
+              Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.all(Radius.circular(20)),
+                  borderRadius: BorderRadius.circular(30),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.grey.withOpacity(0.5),
@@ -280,31 +316,105 @@ class _NearbyScreenState extends State<NearbyScreen> {
                     ),
                   ],
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.search, color: Colors.grey), // 서치 아이콘 추가
-                        SizedBox(width: 8), // 아이콘과 텍스트 간격
-                        Text(
-                          '위치 검색',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
+                child: FloatingActionButton(
+                  onPressed: _toggleMapStyle,
+                  backgroundColor: isDarkMode ? Colors.grey : Colors.white,
+                  child: Icon(isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                      color: isDarkMode ? Colors.amber : Colors.red),
+                ),
+              ),
+              const SizedBox(height: 10), // 버튼 간 간격
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 5,
+                      blurRadius: 7,
+                      offset: Offset(0, 3), // changes position of shadow
                     ),
-                    Icon(Icons.account_circle_outlined, color: Colors.red,size: 30,), // 프로필 아이콘 추가
                   ],
                 ),
+                child: FloatingActionButton(
+                  onPressed: _goToCurrentLocation,
+                  backgroundColor: isDarkMode ? Colors.grey : Colors.white,
+                  child: Icon(Icons.my_location, color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Positioned(
+          top: 20,
+          left: 5, // 좌측 여백
+          right: 5, // 우측 여백
+          child: CupertinoButton(
+            onPressed: _openSearchDetailScreen,
+            child: Container(
+              width: 0.95.sw,
+              height: 44,
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              // 아이콘과 텍스트의 좌우 간격
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.all(Radius.circular(20)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 5,
+                    blurRadius: 7,
+                    offset: Offset(0, 3), // changes position of shadow
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: const [
+                  Row(
+                    children: [
+                      Icon(Icons.search, color: Colors.grey), // 서치 아이콘 추가
+                      SizedBox(width: 8), // 아이콘과 텍스트 간격
+                      Text(
+                        '위치 검색',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Icon(
+                    Icons.account_circle_outlined,
+                    color: Colors.red,
+                    size: 30,
+                  ), // 프로필 아이콘 추가
+                ],
               ),
             ),
           ),
-        ],
+        ),
+        DraggableScrollableSheet(
+          // 화면 비율로 높이 조정
+          initialChildSize: 0.4,
+          minChildSize: 0.4,
+          maxChildSize: 1.0,
+          builder: (BuildContext context, ScrollController scrollController) {
+            return SingleChildScrollView(
+              controller: scrollController,
+              child: Container(
+                  height: 1500,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20)),
+                      color: Colors.purpleAccent),
+                  child: SavedScreen()),
+            );
+          },
+        )
+      ],
     );
   }
 }
-
