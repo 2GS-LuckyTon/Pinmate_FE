@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
+import 'package:flutter/cupertino.dart';
+import './make_list_screen.dart';
 class SavedScreen extends StatefulWidget {
   const SavedScreen({super.key});
 
@@ -42,6 +43,19 @@ class _SavedScreenState extends State<SavedScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+
+    Future<void> _openMakeListScreen() {
+      return Navigator.push(
+        context,
+        CupertinoPageRoute(
+          builder: (context) => MakeListScreen(),
+        ),
+      );
+    }
+
+
+
     // mymine 값에 따라 리스트 분리
     final List<Map<String, dynamic>> myList = savedItems.where((item) => item['mymine'] == true).toList();
     final List<Map<String, dynamic>> otherList = savedItems.where((item) => item['mymine'] == false).toList();
@@ -91,28 +105,34 @@ class _SavedScreenState extends State<SavedScreen> {
           left: 90,
           right: 90,
           child: Center(
-            child: Container(
-              height: 0.05.sh,
-              decoration: BoxDecoration(
-                color: Colors.blueAccent.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(50),
-                border: Border.all(color: Colors.blueAccent, width: 1.5),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.library_add_outlined, color: Colors.blue),
-                  SizedBox(width: 10),
-                  Text(
-                    '리스트 만들기',
-                    style: TextStyle(
-                        color: Colors.blue, fontWeight: FontWeight.bold),
-                  ),
-                ],
+            child: GestureDetector(
+              onTap: () {
+                _openMakeListScreen(); // 버튼을 눌렀을 때 _openMakeListScreen 함수 호출
+              },
+              child: Container(
+                height: 0.05.sh,
+                decoration: BoxDecoration(
+                  color: Colors.blueAccent.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(50),
+                  border: Border.all(color: Colors.blueAccent, width: 1.5),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.library_add_outlined, color: Colors.blue),
+                    SizedBox(width: 10),
+                    Text(
+                      '리스트 만들기',
+                      style: TextStyle(
+                          color: Colors.blue, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
+
       ],
     );
   }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_map_app/main.dart';
+import 'package:flutter/cupertino.dart';
+import '../mainfunction/saved/make_list_screen.dart';
 
 class DraggableModalSheet extends StatelessWidget {
   const DraggableModalSheet({Key? key}) : super(key: key);
@@ -35,6 +37,15 @@ class DraggableModalSheet extends StatelessWidget {
       },
     ];
 
+
+    Future<void> _openMakeListScreen() {
+      return Navigator.push(
+        context,
+        CupertinoPageRoute(
+          builder: (context) => MakeListScreen(),
+        ),
+      );
+    }
 
 
     final List<Map<String, dynamic>> myList = savedItems.where((item) => item['mymine'] == true).toList();
@@ -72,7 +83,7 @@ class DraggableModalSheet extends StatelessWidget {
                 leading: Icon(Icons.add_circle_outline, color: Colors.blue),
                 title: Text('새 리스트 만들기'),
                 onTap: () {
-                  // 새 리스트 추가 기능 구현
+                  _openMakeListScreen();
                 },
               ),
               if (myList.isNotEmpty) ...[
