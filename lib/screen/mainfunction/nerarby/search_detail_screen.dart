@@ -1,22 +1,51 @@
-// search_detail_screen.dart
-
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import './nearby_api.dart';
 
 class SearchDetailScreen extends StatefulWidget {
+  final double latitude;
+  final double longitude;
+
+  // 위도와 경도를 생성자에서 받아오는 구조로 수정합니다.
+  SearchDetailScreen({required this.latitude, required this.longitude});
+
   @override
   _SearchDetailScreenState createState() => _SearchDetailScreenState();
 }
 
 class _SearchDetailScreenState extends State<SearchDetailScreen> {
-  // 검색된 장소들을 저장할 리스트
-  List places = [];
+  List<Map<String, dynamic>> places = [];
+  bool isLoading = false;
+  String errorMessage = '';
+  final TextEditingController _searchController = TextEditingController();
 
-  Future<void> _searchPlaces(String query) async {
-    // 실제 검색 로직 구현 (예: Google Places API)
-    // 결과를 가져와 `places` 리스트에 추가합니다.
+  @override
+  void initState() {
+    super.initState();
+    // 초기 위치 기반으로 장소 검색을 시작합니다.
+    _searchNearbyPlaces();
+  }
+
+  Future<void> _searchNearbyPlaces({String query = ''}) async {
     setState(() {
+      isLoading = true;
+      errorMessage = '';
     });
+
+    try {
+      // 위도와 경도를 widget.latitude, widget.longitude로 접근합니다.
+      final results = await getNearbyPlaces(widget.latitude, widget.longitude, query: query);
+      setState(() {
+        places = results;
+        isLoading = false;
+      });
+      print(places);
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        errorMessage = '장소 검색 중 오류가 발생했습니다: $e';
+      });
+      print('Error searching places: $e');
+    }
   }
 
   @override
@@ -25,24 +54,34 @@ class _SearchDetailScreenState extends State<SearchDetailScreen> {
       appBar: AppBar(title: Text("장소 검색")),
       body: Column(
         children: [
-          TextField(
-            onChanged: (query) {
-              _searchPlaces(query); // 검색어 입력 시 검색 수행
-            },
-            decoration: InputDecoration(
-              hintText: '장소 검색',
-              prefixIcon: Icon(Icons.search),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: '장소 검색',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                _searchNearbyPlaces(query: value);
+              },
             ),
           ),
           Expanded(
-            child: ListView.builder(
+            child: isLoading
+                ? Center(child: CircularProgressIndicator())
+                : errorMessage.isNotEmpty
+                ? Center(child: Text(errorMessage))
+                : ListView.builder(
               itemCount: places.length,
               itemBuilder: (context, index) {
                 final place = places[index];
                 return ListTile(
-                  title: Text(place.name),
+                  title: Text(place['name'] ?? 'No name'),
+                  subtitle: Text(place['address'] ?? 'No address'),
                   onTap: () {
-                    Navigator.pop(context, place.location); // 장소 선택 시 위치 정보 반환
+                    Navigator.pop(context, place);
                   },
                 );
               },
@@ -51,5 +90,11 @@ class _SearchDetailScreenState extends State<SearchDetailScreen> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 }
