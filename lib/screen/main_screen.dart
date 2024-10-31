@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shared_map_app/screen/widgets/draggable_modal_sheet.dart';
 import './mainfunction/nerarby/nearby_screen.dart';
 import './mainfunction/saved/saved_screen.dart';
 import './mainfunction/list/list_screen.dart';
 import './mainfunction/profile/profile_screen.dart';
-
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -12,9 +12,9 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int current_index = 0;
+  int currentIndex = 0;
 
-  // Screens for each tab
+  // 각 탭에 연결된 화면 리스트
   final List<Widget> screens = [
     NearbyScreen(),
     SavedScreen(),
@@ -25,16 +25,21 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: screens[current_index],
-
+      body: Stack(
+        children: [
+          screens[currentIndex], // 현재 탭 화면
+          if (currentIndex == 0) // `지도` 인덱스에서만 DraggableModalSheet 표시
+            DraggableModalSheet(),
+        ],
+      ),
       bottomNavigationBar: Container(
-        color: Colors.white, //색상
+        color: Colors.white,
         height: 80,
         child: BottomNavigationBar(
-          currentIndex: current_index,
+          currentIndex: currentIndex,
           onTap: (index) {
             setState(() {
-              current_index = index;
+              currentIndex = index;
             });
           },
           items: [
@@ -64,4 +69,3 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 }
-
