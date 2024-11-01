@@ -56,6 +56,12 @@ class _ListDetailScreenState extends State<ListDetailScreen> {
           'longitude': 129.3312,
           'description': '유네스코 세계문화유산',
         },
+        {
+          'title': '정통집',
+          'latitude': 35.8315, // 임의의 위도
+          'longitude': 129.2201, // 임의의 경도
+          'description': '경주에 있는 맛집',
+        },
       ],
     },
     {
@@ -65,16 +71,22 @@ class _ListDetailScreenState extends State<ListDetailScreen> {
       'color': 60, // Specify hue value directly
       'places': [
         {
-          'title': '인천대 공학대학',
-          'latitude': 37.3757,
-          'longitude': 126.6323,
-          'description': '공학 분야 교육의 중심지',
+          'title': '정통집',
+          'latitude': 37.5559,
+          'longitude': 126.9730,
+          'description': '서울 시청 근처의 맛집',
         },
         {
-          'title': '인천대학교 학산도서관',
-          'latitude': 37.3747,
-          'longitude': 126.6322,
-          'description': '학습과 연구를 위한 도서관',
+          'title': '광화문',
+          'latitude': 37.5759,
+          'longitude': 126.9769,
+          'description': '관광지',
+        },
+        {
+          'title': '파이브가이즈',
+          'latitude': 37.5551,
+          'longitude': 126.9786,
+          'description': '서울의 유명한 햄버거 가게',
         },
       ],
     },

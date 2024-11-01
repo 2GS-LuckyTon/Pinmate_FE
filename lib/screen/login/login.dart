@@ -111,9 +111,6 @@ class __FormContentState extends State<_FormContent> {
             MaterialPageRoute(builder: (context) => const MainScreen()),
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('로그인 실패')),
-          );
 
           Navigator.pushReplacement(
             context,

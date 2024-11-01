@@ -7,6 +7,8 @@ import 'package:flutter/services.dart' show rootBundle;
 import './search_detail_screen.dart';
 import './place_save_dialog.dart';
 import './select_list_dropdown.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class NearbyScreen extends StatefulWidget {
   const NearbyScreen({super.key});
@@ -33,33 +35,51 @@ class _NearbyScreenState extends State<NearbyScreen> {
   // 마커를 저장하는 Set
   Set<Marker> _markers = {};
 
-  final List<Map<String, dynamic>> _foodies = [
+  late List<Map<String, dynamic>> _foodies = [
+    {
+      "pin_id": "1",
+      "listName": "서울",
+      "color": 60,
+      "name": "정통집",
+      "subtitle": "맛집",
+      "latitude": 37.5559, // 서울 시청 근처
+      "longitude": 126.9730,
+    },
+    {
+      "pin_id": "2",
+      "listName": "경주",
+      "name": "정돈",
+      "color": 20,
+      "subtitle": "맛집2",
+      "latitude": 35.8327, // 경주 중심부
+      "longitude": 129.2279,
+    },
     {
       "pin_id": "0",
       "listName": "서울",
-      "color": 20,
-      "name": "정통집",
-      "subtitle": "맛집",
-      "latitude": 37.3898445,
-      "longitude": 126.7392103,
-    },
-    {
-      "pin_id": "0",
-      "listName": "맛방대 지도",
-      "name": "정돈",
-      "color": 60,
-      "subtitle": "ㅋ",
-      "latitude": 37.5039059,
-      "longitude": 127.0263972,
-    },
-    {
-      "pin_id": "1",
-      "listName": "경주",
       "name": "파이브가이즈",
-      "color": 330, //위치 정보
+      "color": 330,
       "subtitle": "햄버거",
-      "latitude": 37.5012238,
-      "longitude": 127.0256401,
+      "latitude": 37.5551, // 실제 파이브가이즈 위치
+      "longitude": 126.9786,
+    },
+    {
+      "pin_id": "3",
+      "listName": "서울",
+      "name": "광화문",
+      "color": 60,
+      "subtitle": "관광지",
+      "latitude": 37.5759,
+      "longitude": 126.9769,
+    },
+    {
+      "pin_id": "4",
+      "listName": "경주",
+      "name": "불국사",
+      "color": 20,
+      "subtitle": "유네스코 세계문화유산",
+      "latitude": 35.7894,
+      "longitude": 129.3312,
     },
   ];
 
@@ -67,6 +87,34 @@ class _NearbyScreenState extends State<NearbyScreen> {
     super.initState();
     _loadDarkMapStyle(); // 야간 모드 스타일 불러오기
     _initializeMarkers(); // 마커 초기화
+    _fetchFoodies();
+  }
+
+  Future<void> _fetchFoodies() async {
+    try {
+      final response = await http.get(Uri.parse('YOUR_SERVER_URL'));
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          _foodies = data.map((item) =>
+          {
+            'pin_id': item['pin_id'],
+            'listName': item['listName'],
+            'color': item['color'],
+            'name': item['name'],
+            'subtitle': item['subtitle'],
+            'latitude': item['latitude'],
+            'longitude': item['longitude'],
+          }).toList();
+          _initializeMarkers(); // 데이터 로드 후 마커 초기화
+        });
+      } else {
+        throw Exception('Failed to load data');
+      }
+    } catch (e) {
+      print("Error fetching foodies data: $e");
+    }
   }
 
   // 마커 초기화 함수
@@ -81,9 +129,9 @@ class _NearbyScreenState extends State<NearbyScreen> {
             snippet: e['subtitle'] as String,
           ),
           icon: e['pin_id'] == "0"
-              ? BitmapDescriptor.defaultMarkerWithHue(hue)
-              : BitmapDescriptor.defaultMarkerWithHue(330) // 매핑된 색상으로 마커 색상 변경
-          );
+              ? BitmapDescriptor.defaultMarkerWithHue(330)
+              : BitmapDescriptor.defaultMarkerWithHue(hue) // 매핑된 색상으로 마커 색상 변경
+      );
     }).toSet();
   }
 
@@ -176,7 +224,7 @@ class _NearbyScreenState extends State<NearbyScreen> {
                   decoration: InputDecoration(
                     hintText: '한줄 메모',
                     contentPadding:
-                        EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+                    EdgeInsets.symmetric(vertical: 20, horizontal: 12),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.0),
                       borderSide: BorderSide(
@@ -206,8 +254,8 @@ class _NearbyScreenState extends State<NearbyScreen> {
                   maxLength: 35,
                   buildCounter: (BuildContext context,
                       {required int currentLength,
-                      required int? maxLength,
-                      required bool isFocused}) {
+                        required int? maxLength,
+                        required bool isFocused}) {
                     return Text(
                       '$currentLength/$maxLength',
                       style: TextStyle(color: Colors.grey),
@@ -258,9 +306,12 @@ class _NearbyScreenState extends State<NearbyScreen> {
       );
       //더미데이터에 추가
       _foodies.add({
-        "name": memo,
+        "name": title,
         "latitude": position.latitude,
         "longitude": position.longitude,
+        "color": selectedList['color'],
+        "listName": selectedList['title'],
+        "subtitle": memo
       });
     });
   }
@@ -320,10 +371,11 @@ class _NearbyScreenState extends State<NearbyScreen> {
     final result = await Navigator.push(
       context,
       CupertinoPageRoute(
-        builder: (context) => SearchDetailScreen(
-          latitude: currentPosition!.latitude!,
-          longitude: currentPosition!.longitude!,
-        ),
+        builder: (context) =>
+            SearchDetailScreen(
+              latitude: currentPosition!.latitude!,
+              longitude: currentPosition!.longitude!,
+            ),
       ),
     );
 
@@ -357,7 +409,7 @@ class _NearbyScreenState extends State<NearbyScreen> {
               zoomControlsEnabled: false,
               //onTap: isBookMarkView? _showMarkerDialog : _onMapTap, // 지도 탭 시 다이얼로그 표시
               onTap: _showMarkerDialog // 지도 탭 시 다이얼로그 표시
-              ),
+          ),
         ),
         Positioned(
           right: 10.0,
