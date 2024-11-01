@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../main_screen.dart';
 import 'list_detail_screen.dart';
+import 'tag_list_screen.dart'; // TagListScreen import
 
 class ListScreen extends StatefulWidget {
   const ListScreen({super.key});
@@ -8,8 +9,8 @@ class ListScreen extends StatefulWidget {
   @override
   State<ListScreen> createState() => _ListScreenState();
 }
+
 class _ListScreenState extends State<ListScreen> {
-  // 예시 데이터
   final List<String> categories = ["술집", "맛집", "카페", "여행지", "기타"];
   final List<Map<String, dynamic>> hotList = [
     {"title": "Title", "content": "content", "scrap": 500},
@@ -52,15 +53,26 @@ class _ListScreenState extends State<ListScreen> {
                 childAspectRatio: 1,
               ),
               itemBuilder: (context, index) {
-                return Column(
-                  children: [
-                    Container(
-                      height: 50,
-                      width: 50,
-                      color: Colors.grey[300],
-                    ),
-                    Text(categories[index], style: TextStyle(fontSize: 12)),
-                  ],
+                return GestureDetector(
+                  onTap: () {
+                    // 리스트 태그 클릭 시 TagListScreen으로 이동
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TagListScreen(category: categories[index]),
+                      ),
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 50,
+                        width: 50,
+                        color: Colors.grey[300],
+                      ),
+                      Text(categories[index], style: TextStyle(fontSize: 12)),
+                    ],
+                  ),
                 );
               },
             ),
