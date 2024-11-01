@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../main_screen.dart';
 import 'list_detail_screen.dart';
-import 'tag_list_screen.dart'; // TagListScreen import
+import 'tag_list_screen.dart';
 
 class ListScreen extends StatefulWidget {
   const ListScreen({super.key});
@@ -12,12 +11,48 @@ class ListScreen extends StatefulWidget {
 }
 
 class _ListScreenState extends State<ListScreen> {
-  final List<String> categories = ["술집", "맛집", "카페", "여행지", "기타"];
-  final List<Map<String, dynamic>> Lists = [
-    {"title": "Title", "subTitle": "ddkdkdk", "sharedCount": 500, "color": Colors.blue},
-    {"title": "Title", "subTitle": "zzzzz", "sharedCount": 200, "color": Colors.yellow},
-    {"title": "Title", "subTitle": "ddddddd", "sharedCount": 400, "color": Colors.red},
-    {"title": "Title", "subTitle": "zz", "sharedCount": 100, "color": Colors.blue},
+  final List<Map<String, dynamic>> categories = [
+    {"name": "술집", "icon": Icons.local_bar},
+    {"name": "맛집", "icon": Icons.restaurant},
+    {"name": "카페", "icon": Icons.local_cafe},
+    {"name": "여행지", "icon": Icons.map},
+    {"name": "기타", "icon": Icons.category},
+  ];
+
+  final List<Map<String, dynamic>> lists = [
+    {
+      "title": "경주",
+      "subTitle": "핫한 관광지",
+      "locationCount": 32,
+      "sharedCount": 122,
+      "color": Colors.pink,
+      "tags": ["여행지"],
+      "places": [
+        {"title": "경주 대릉원", "latitude": 35.8352, "longitude": 129.2190, "description": "경주의 대표적인 고분군"},
+        {"title": "경주 불국사", "latitude": 35.7894, "longitude": 129.3312, "description": "유네스코 세계문화유산"},
+      ]
+    },
+    {
+      "title": "서울",
+      "subTitle": "도심 명소",
+      "locationCount": 32,
+      "sharedCount": 61,
+      "color": Colors.amber,
+      "tags": ["여행지", "맛집"],
+      "places": [
+        {"title": "인천대 공학대학", "latitude": 37.3757, "longitude": 126.6323, "description": "공학 분야 교육의 중심지"},
+        {"title": "인천대학교 학산도서관", "latitude": 37.3747, "longitude": 126.6322, "description": "학습과 연구를 위한 도서관"},
+      ]
+    },
+    {
+      "title": "맛방대지도",
+      "subTitle": "맛집 가이드",
+      "locationCount": 32,
+      "sharedCount": 61,
+      "color": Colors.blue,
+      "tags": ["맛집"],
+      "places": []
+    },
   ];
 
   @override
@@ -28,7 +63,6 @@ class _ListScreenState extends State<ListScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 검색 바
             SizedBox(height: 0.1.sw),
             TextField(
               decoration: InputDecoration(
@@ -41,8 +75,6 @@ class _ListScreenState extends State<ListScreen> {
               ),
             ),
             SizedBox(height: 20),
-
-            // 카테고리 목록 (그리드 레이아웃)
             Text("리스트 태그", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
             GridView.builder(
@@ -55,13 +87,16 @@ class _ListScreenState extends State<ListScreen> {
                 childAspectRatio: 1,
               ),
               itemBuilder: (context, index) {
+                final category = categories[index];
                 return GestureDetector(
                   onTap: () {
-                    // 리스트 태그 클릭 시 TagListScreen으로 이동
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => TagListScreen(category: categories[index]),
+                        builder: (context) => TagListScreen(
+                          category: category["name"],
+                          lists: lists, // Pass the lists data to TagListScreen
+                        ),
                       ),
                     );
                   },
@@ -70,45 +105,54 @@ class _ListScreenState extends State<ListScreen> {
                       Container(
                         height: 50,
                         width: 50,
-                        color: Colors.grey[300],
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          category["icon"],
+                          size: 28,
+                          color: Colors.grey[700],
+                        ),
                       ),
-                      Text(categories[index], style: TextStyle(fontSize: 12)),
+                      Text(category["name"], style: TextStyle(fontSize: 12)),
                     ],
                   ),
                 );
               },
             ),
             SizedBox(height: 20),
-
-            // Hot list 제목
             Text("Top 20", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
-
-            // Hot list 목록 (무한 스크롤 구현 가능)
             Expanded(
               child: ListView.builder(
-                itemCount: Lists.length,
+                itemCount: lists.length,
                 itemBuilder: (context, index) {
-                  final hotItem = Lists[index];
-
+                  final listItem = lists[index];
                   return ListTile(
-                    leading:
-                    Icon(Icons.location_on_outlined, color: hotItem["color"],size: 30,),
-                    title: Text(hotItem["title"] ?? "Unknown Title"), // Default title if null
-                    subtitle: Text(hotItem["subTitle"] ?? "Unknown subTitle"), // Default tag if null
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
+                    leading: Icon(Icons.location_pin, color: listItem["color"], size: 30),
+                    title: Text(listItem["title"] ?? "Unknown Title"),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.share_outlined),
-                        SizedBox(width: 5),
-                        Text(hotItem["sharedCount"]?.toString() ?? "0"), // Default to "0" if null
+                        Text(listItem["subTitle"] ?? "Unknown subTitle"),
+                        SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Icons.location_on, size: 16, color: Colors.grey),
+                            Text(listItem["locationCount"].toString()),
+                            SizedBox(width: 10),
+                            Icon(Icons.share_outlined, size: 16, color: Colors.grey),
+                            Text(listItem["sharedCount"].toString()),
+                          ],
+                        ),
                       ],
                     ),
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ListDetailScreen(),
+                          builder: (context) => ListDetailScreen(title: listItem["title"]),
                         ),
                       );
                     },

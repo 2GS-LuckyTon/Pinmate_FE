@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:shared_map_app/main.dart';
 import 'package:flutter/cupertino.dart';
-import '../mainfunction/list/list_detail_screen.dart';
+import 'package:shared_map_app/screen/mainfunction/list/list_detail_screen.dart';
 import '../mainfunction/saved/make_list_screen.dart';
 
 class DraggableModalSheet extends StatelessWidget {
   const DraggableModalSheet({Key? key}) : super(key: key);
-
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +15,7 @@ class DraggableModalSheet extends StatelessWidget {
         'title': '경주',
         'locationCount': 32,
         'sharedCount': 122,
-        'mymine': false, // 내꺼 아님
+        'mymine': false,
       },
       {
         'icon': Icons.location_on_outlined,
@@ -26,7 +23,7 @@ class DraggableModalSheet extends StatelessWidget {
         'title': '서울',
         'locationCount': 32,
         'sharedCount': 61,
-        'mymine': true, // 내꺼
+        'mymine': true,
       },
       {
         'icon': Icons.location_on_outlined,
@@ -34,10 +31,9 @@ class DraggableModalSheet extends StatelessWidget {
         'title': '맛방대지도',
         'locationCount': 32,
         'sharedCount': 61,
-        'mymine': true, // 내꺼
+        'mymine': true,
       },
     ];
-
 
     Future<void> _openMakeListScreen() {
       return Navigator.push(
@@ -47,7 +43,6 @@ class DraggableModalSheet extends StatelessWidget {
         ),
       );
     }
-
 
     final List<Map<String, dynamic>> myList = savedItems.where((item) => item['mymine'] == true).toList();
     final List<Map<String, dynamic>> otherList = savedItems.where((item) => item['mymine'] == false).toList();
@@ -64,7 +59,7 @@ class DraggableModalSheet extends StatelessWidget {
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: ListView(
-            padding: EdgeInsets.only(top:5),  // 위쪽 여백을 제거
+            padding: EdgeInsets.only(top:5),
             controller: scrollController,
             children: [
               Padding(
@@ -88,11 +83,10 @@ class DraggableModalSheet extends StatelessWidget {
                 },
               ),
               if (myList.isNotEmpty) ...[
-                ...myList.map((item) => buildListItem(context,item)).toList(),
+                ...myList.map((item) => buildListItem(context, item)).toList(),
               ],
-              // 상대 리스트 섹션
               if (otherList.isNotEmpty) ...[
-                ...otherList.map((item) => buildListItem(context,item)).toList(),
+                ...otherList.map((item) => buildListItem(context, item)).toList(),
               ],
             ],
           ),
@@ -102,10 +96,7 @@ class DraggableModalSheet extends StatelessWidget {
   }
 }
 
-
-
-// 리스트 아이템 누르기
-Widget buildListItem(BuildContext context,Map<String, dynamic> item) {
+Widget buildListItem(BuildContext context, Map<String, dynamic> item) {
   return ListTile(
     leading: Icon(item['icon'], color: item['color']),
     title: Text(item['title']),
@@ -122,7 +113,7 @@ Widget buildListItem(BuildContext context,Map<String, dynamic> item) {
       Navigator.push(
         context,
         CupertinoPageRoute(
-          builder: (context) => ListDetailScreen(),
+          builder: (context) => ListDetailScreen(title: item['title']),
         ),
       );
     },
