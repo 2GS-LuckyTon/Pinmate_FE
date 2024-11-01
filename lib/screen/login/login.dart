@@ -1,38 +1,38 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:flutter/cupertino.dart';
-import '../signup/signup.dart'; // 회원가입 페이지가 있는 위치에 따라 import 경로를 수정하세요.
-import '../main_screen.dart';
+import '../../services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import '../main_screen.dart';
+import '../signup/signup.dart';
 
 class LoginScreen extends StatelessWidget {
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final ApiService _apiService = ApiService();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true, // 키보드가 올라올 때 자동으로 스크롤 조정
+      resizeToAvoidBottomInset: true,
       body: SingleChildScrollView(
         child: Container(
-          color:Colors.white,
+          color: Colors.white,
           child: Center(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(height: 0.1.sh), // 상단에 여백 추가
+                  SizedBox(height: 0.1.sh),
                   const _Logo(),
-                  SizedBox(height: 20.h), // 로고와 폼 사이의 간격
+                  SizedBox(height: 20.h),
                   _FormContent(
                     idController: _idController,
                     passwordController: _passwordController,
+                    apiService: _apiService,
                   ),
-                  SizedBox(height: 1.0.sh), // 하단 여백 추가
+                  SizedBox(height: 1.0.sh),
                 ],
               ),
             ),
@@ -48,15 +48,13 @@ class _Logo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isSmallScreen = MediaQuery.of(context).size.width < 600;
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
+        SizedBox(
           width: 300,
           height: 300,
-          child: Image.asset('assets/logo.png',fit: BoxFit.contain),
+          child: Image.asset('assets/logo.png', fit: BoxFit.contain),
         ),
       ],
     );
@@ -64,14 +62,16 @@ class _Logo extends StatelessWidget {
 }
 
 class _FormContent extends StatefulWidget {
+  final TextEditingController idController;
+  final TextEditingController passwordController;
+  final ApiService apiService;
+
   const _FormContent({
     Key? key,
     required this.idController,
     required this.passwordController,
+    required this.apiService,
   }) : super(key: key);
-
-  final TextEditingController idController;
-  final TextEditingController passwordController;
 
   @override
   State<_FormContent> createState() => __FormContentState();
@@ -79,53 +79,29 @@ class _FormContent extends StatefulWidget {
 
 class __FormContentState extends State<_FormContent> {
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  // ID와 비밀번호를 서버로 전송하는 메서드
   Future<void> _submitLogin() async {
-    final String id = widget.idController.text.trim(); // 공백 제거
-    final String password = widget.passwordController.text.trim(); // 공백 제거
+    final String email = widget.idController.text.trim();
+    final String password = widget.passwordController.text.trim();
 
-    // 유효성 검사 통과 후 서버에 전송
     if (_formKey.currentState?.validate() ?? false) {
-      try {
-        final response = await http.post(
-          Uri.parse('https://example.com/login'), // 서버 주소로 변경
-          headers: <String, String>{
-            'Content-Type': 'application/json; charset=UTF-8',
-          },
-          body: jsonEncode(<String, String>{
-            'id': id,
-            'password': password
-          }),
-        );
+      setState(() => _isLoading = true); // Start loading
 
-        if (response.statusCode == 200) {
-          final responseData = jsonDecode(response.body);
+      final userId = await widget.apiService.login(email, password);
 
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('session_id', responseData['session_id']);
+      setState(() => _isLoading = false); // Stop loading
 
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const MainScreen()),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('로그인 실패')),
-          );
-
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const MainScreen()),
-          );
-        }
-      } catch (e) {
+      if (userId != null) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MainScreen()),
         );
-        print('Error: $e');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('로그인 실패: 이메일이나 비밀번호를 확인하세요.')),
+        );
       }
     }
   }
@@ -141,10 +117,10 @@ class __FormContentState extends State<_FormContent> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextFormField(
-              controller: widget.idController, // 변경된 부분
+              controller: widget.idController,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return '빈칸입니다!';
+                  return '아이디를 입력하세요!';
                 }
                 return null;
               },
@@ -155,12 +131,12 @@ class __FormContentState extends State<_FormContent> {
                 border: OutlineInputBorder(),
               ),
             ),
-            _gap(),
+            const SizedBox(height: 16),
             TextFormField(
-              controller: widget.passwordController, // 변경된 부분
+              controller: widget.passwordController,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return '빈칸입니다!';
+                  return '비밀번호를 입력하세요!';
                 }
                 return null;
               },
@@ -171,9 +147,9 @@ class __FormContentState extends State<_FormContent> {
                 prefixIcon: const Icon(Icons.lock_outline_rounded),
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
-                  icon: Icon(_isPasswordVisible
-                      ? Icons.visibility_off
-                      : Icons.visibility),
+                  icon: Icon(
+                    _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                  ),
                   onPressed: () {
                     setState(() {
                       _isPasswordVisible = !_isPasswordVisible;
@@ -182,7 +158,7 @@ class __FormContentState extends State<_FormContent> {
                 ),
               ),
             ),
-            _gap(),
+            const SizedBox(height: 16),
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
@@ -190,14 +166,14 @@ class __FormContentState extends State<_FormContent> {
                   Navigator.push(
                     context,
                     CupertinoPageRoute(
-                      builder: (context) => const SignupScreen(), // 회원가입 페이지
+                      builder: (context) => const SignupScreen(),
                     ),
                   );
                 },
                 child: const Text("회원가입", style: TextStyle(color: Colors.blueAccent)),
               ),
             ),
-            _gap(),
+            const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: GestureDetector(
@@ -214,8 +190,7 @@ class __FormContentState extends State<_FormContent> {
                     children: const [
                       Text(
                         '시작하기',
-                        style: TextStyle(
-                            color: Colors.blue, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -227,6 +202,4 @@ class __FormContentState extends State<_FormContent> {
       ),
     );
   }
-
-  Widget _gap() => const SizedBox(height: 16);
 }

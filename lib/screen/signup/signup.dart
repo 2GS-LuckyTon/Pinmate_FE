@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../services/api_service.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -14,18 +15,32 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController _confirmPasswordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
+  final ApiService _apiService = ApiService();
 
-  void _signup() {
+  void _signup() async {
     if (_formKey.currentState!.validate()) {
-      // 회원가입 로직 처리 (예: 데이터베이스에 정보 저장)
-      Navigator.pop(context); // 회원가입 후 이전 화면으로 돌아가기
+      final email = _usernameController.text;
+      final password = _passwordController.text;
+      const image = '1111'; // 이미지 값 설정 (예: 기본 프로필 이미지)
+
+      final response = await _apiService.signup(email, password, image);
+
+      if (response != null) {
+        print('Signup successful: $response');
+        Navigator.pop(context); // 회원가입 성공 후 이전 화면으로 돌아가기
+      } else {
+        print('Signup failed');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('회원가입에 실패했습니다. 다시 시도해주세요.')),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true, // 키보드가 올라올 때 자동으로 스크롤 조정
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text("회원가입"),
         centerTitle: true,
