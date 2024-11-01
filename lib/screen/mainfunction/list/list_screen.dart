@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../main_screen.dart';
-
+import 'list_detail_screen.dart';
 
 class ListScreen extends StatefulWidget {
   const ListScreen({super.key});
@@ -92,7 +92,12 @@ class _ListScreenState extends State<ListScreen> {
                       ],
                     ),
                     onTap: () {
-                      // 아이템 클릭 시 동작
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ListDetailScreen(),
+                        ),
+                      );
                     },
                   );
                 },
