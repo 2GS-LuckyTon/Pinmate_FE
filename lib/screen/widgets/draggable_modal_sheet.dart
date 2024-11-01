@@ -29,46 +29,20 @@ class DraggableModalSheet extends StatelessWidget {
   List<Map<String, dynamic>> _getDummyData() {
     return [
       {
+        'id':1,
         'color': 20,
         'title': '경주',
         'locationCount': 32,
         'sharedCount': 122,
         'mymine': false,
-        'places': [
-          {
-            'title': '경주 대릉원',
-            'latitude': 35.8352,
-            'longitude': 129.2190,
-            'description': '경주의 대표적인 고분군',
-          },
-          {
-            'title': '경주 불국사',
-            'latitude': 35.7894,
-            'longitude': 129.3312,
-            'description': '유네스코 세계문화유산',
-          },
-        ],
       },
       {
-        'color': 40,
+        'id':2,
+        'color': 60,
         'title': '서울',
         'locationCount': 32,
         'sharedCount': 61,
         'mymine': true,
-        'places': [
-          {
-            'title': '인천대 공학대학',
-            'latitude': 37.3757,
-            'longitude': 126.6323,
-            'description': '공학 분야 교육의 중심지',
-          },
-          {
-            'title': '인천대학교 학산도서관',
-            'latitude': 37.3747,
-            'longitude': 126.6322,
-            'description': '학습과 연구를 위한 도서관',
-          },
-        ],
       },
     ];
   }
