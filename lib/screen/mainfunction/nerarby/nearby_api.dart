@@ -14,7 +14,6 @@ Future<List<Map<String, dynamic>>> getNearbyPlaces(double lat, double lng, {Stri
 
   if (response.statusCode == 200) {
     final data = json.decode(response.body);
-    print(data['id']);
     // 이름, 주소, 위도, 경도가 포함된 리스트 반환
     return (data['results'] as List).map((place) {
       return {
@@ -22,6 +21,12 @@ Future<List<Map<String, dynamic>>> getNearbyPlaces(double lat, double lng, {Stri
         'address': place['vicinity'],
         'latitude': place['geometry']['location']['lat'],
         'longitude': place['geometry']['location']['lng'],
+        'phone_number': place['formatted_phone_number'], // 전화번호
+        'rating': place['rating'], // 평점
+        'opening_hours': place['opening_hours'] != null // 영업시간
+            ? place['opening_hours']['open_now']
+            : null,
+        'place_id': place['place_id'], // 장소 ID
       };
     }).toList();
   } else {

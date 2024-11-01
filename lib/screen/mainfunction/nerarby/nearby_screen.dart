@@ -5,6 +5,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import './search_detail_screen.dart';
+import './place_save_dialog.dart';
+import './select_list_dropdown.dart';
 
 class NearbyScreen extends StatefulWidget {
   const NearbyScreen({super.key});
@@ -23,6 +25,7 @@ class _NearbyScreenState extends State<NearbyScreen> {
   bool isDarkMode = false; // 야간 모드 상태를 저장하는 변수
   String? _darkMapStyle; // 야간 모드 스타일
 
+  TextEditingController _titleController = TextEditingController();
   TextEditingController _memoController = TextEditingController();
 
   bool isBookMarkView = true;
@@ -32,17 +35,29 @@ class _NearbyScreenState extends State<NearbyScreen> {
 
   final List<Map<String, dynamic>> _foodies = [
     {
+      "pin_id": "0",
+      "listName": "서울",
+      "color": 20,
       "name": "정통집",
+      "subtitle": "맛집",
       "latitude": 37.3898445,
       "longitude": 126.7392103,
     },
     {
+      "pin_id": "0",
+      "listName": "맛방대 지도",
       "name": "정돈",
+      "color": 60,
+      "subtitle": "ㅋ",
       "latitude": 37.5039059,
       "longitude": 127.0263972,
     },
     {
+      "pin_id": "1",
+      "listName": "경주",
       "name": "파이브가이즈",
+      "color": 330, //위치 정보
+      "subtitle": "햄버거",
       "latitude": 37.5012238,
       "longitude": 127.0256401,
     },
@@ -57,11 +72,18 @@ class _NearbyScreenState extends State<NearbyScreen> {
   // 마커 초기화 함수
   void _initializeMarkers() {
     _markers = _foodies.map((e) {
+      double hue = e['color'] is int ? (e['color'] as int).toDouble() : 0.0;
       return Marker(
-        markerId: MarkerId(e['name'] as String),
-        position: LatLng(e['latitude'] as double, e['longitude'] as double),
-        infoWindow: InfoWindow(title: e['name'] as String),
-      );
+          markerId: MarkerId(e['name'] as String),
+          position: LatLng(e['latitude'] as double, e['longitude'] as double),
+          infoWindow: InfoWindow(
+            title: e['name'] as String,
+            snippet: e['subtitle'] as String,
+          ),
+          icon: e['pin_id'] == "0"
+              ? BitmapDescriptor.defaultMarkerWithHue(hue)
+              : BitmapDescriptor.defaultMarkerWithHue(330) // 매핑된 색상으로 마커 색상 변경
+          );
     }).toSet();
   }
 
@@ -111,28 +133,6 @@ class _NearbyScreenState extends State<NearbyScreen> {
     }
   }
 
-  // void _onMapTap(LatLng tappedPoint) async {
-  //   // 탭한 위치 근처의 장소 ID 얻기
-  //   final placeId = await getPlaceIdFromLocation(tappedPoint); // 장소 ID 가져오기 메서드 정의
-  //   if (placeId != null) {
-  //     final placeDetails = await fetchPlaceDetails(placeId); // 장소 세부 정보 가져오기 메서드 정의
-  //     showPlaceInfoDialog(placeDetails); // 정보를 다이얼로그에 표시
-  //   }
-  // }
-  // // 장소 세부 정보를 Places API로 가져오기
-  // Future<Map<String, dynamic>> fetchPlaceDetails(String placeId) async {
-  //   final apiKey = 'AIzaSyBbpuoayD7-LKWoLxOzsO5ZN5Zv_AT2teI';
-  //   final url = 'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$apiKey';
-  //   final response = await http.get(Uri.parse(url));
-  //
-  //   if (response.statusCode == 200) {
-  //     return jsonDecode(response.body)['result'];
-  //   } else {
-  //     throw Exception("장소 세부 정보를 불러오지 못했습니다.");
-  //   }
-  // }
-
-
 
   void _toggleMapStyle() {
     setState(() {
@@ -143,21 +143,76 @@ class _NearbyScreenState extends State<NearbyScreen> {
 
   // 특정 위치에 마커 추가 여부를 묻는 다이얼로그 표시 함수
   void _showMarkerDialog(LatLng tappedPoint) {
+    Map<String, dynamic>? selectedList;
+
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: Text('마커 추가'),
           content: Container(
-            height: 0.3.sw,
+            height: 0.6.sw,
             child: Column(
               children: [
-                Text('이 위치에 마커를 추가하시겠습니까?'),
+                SelectListDropdown(
+                  onListSelected: (list) {
+                    selectedList = list; // 선택된 리스트 저장
+                    print('선택된 리스트: $selectedList');
+                  },
+                ),
+                TextField(
+                  controller: _titleController,
+                  decoration: InputDecoration(
+                    hintText: '제목',
+                  ),
+                ),
+                SizedBox(
+                  height: 30,
+                ),
                 TextField(
                   controller: _memoController,
+                  maxLines: 3,
+                  minLines: 1,
                   decoration: InputDecoration(
                     hintText: '한줄 메모',
+                    contentPadding:
+                        EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: BorderSide(
+                        color: Colors.grey,
+                        width: 2.0,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: BorderSide(
+                        color: Colors.grey,
+                        width: 2.0,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: BorderSide(
+                        color: Colors.grey,
+                        width: 2.0,
+                      ),
+                    ),
                   ),
+                  style: TextStyle(
+                    fontSize: 16,
+                    height: 1.5,
+                  ),
+                  maxLength: 35,
+                  buildCounter: (BuildContext context,
+                      {required int currentLength,
+                      required int? maxLength,
+                      required bool isFocused}) {
+                    return Text(
+                      '$currentLength/$maxLength',
+                      style: TextStyle(color: Colors.grey),
+                    );
+                  },
                 ),
               ],
             ),
@@ -165,14 +220,18 @@ class _NearbyScreenState extends State<NearbyScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // 다이얼로그 닫기
+                Navigator.of(context).pop();
               },
               child: Text('취소'),
             ),
             TextButton(
               onPressed: () {
-                _addMarker(tappedPoint, _memoController.text); // 마커 추가 함수 호출
-                Navigator.of(context).pop(); // 다이얼로그 닫기
+                print("sdklfjsldf");
+                if (selectedList != null) {
+                  _addMarker(tappedPoint, _memoController.text,
+                      _titleController.text, selectedList!);
+                }
+                Navigator.of(context).pop();
               },
               child: Text('추가'),
             ),
@@ -183,14 +242,17 @@ class _NearbyScreenState extends State<NearbyScreen> {
   }
 
   // 그냥 위치 추가 마크
-  void _addMarker(LatLng position, String memo) {
+  void _addMarker(LatLng position, String memo, String title,
+      Map<String, dynamic> selectedList) {
     setState(() {
       _markers.add(
         Marker(
             markerId: MarkerId(position.toString()),
             position: position,
+            icon: BitmapDescriptor.defaultMarkerWithHue(
+                (selectedList['color'] as int).toDouble()),
             infoWindow: InfoWindow(
-              title: "북마크 이름",
+              title: title,
               snippet: memo, // 추가한 메모를 표시,
             )),
       );
@@ -202,21 +264,53 @@ class _NearbyScreenState extends State<NearbyScreen> {
       });
     });
   }
+
   //검색 위치 추가 마크
-  void _addMarker_search(LatLng position, String memo) {
+  void _addMarker_search(result) {
+    final latitude = result['latitude'];
+    final longitude = result['longitude'];
+    final memo = result['name'];
+    LatLng position = LatLng(latitude, longitude);
+
     setState(() {
       _markers.add(
         Marker(
-            markerId: MarkerId(position.toString()),
-            position: position,
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue), // 파란색 마커 설정
-            infoWindow: InfoWindow(
-              title: memo,
-            )),
+          markerId: MarkerId(position.toString()),
+          position: position,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+          // 파란색 마커 설정
+          infoWindow: InfoWindow(
+            title: memo,
+            onTap: () {
+              // 추가 버튼이 있는 다이얼로그를 표시하는 함수 호출
+              _showAddButtonDialog(result);
+            },
+          ),
+        ),
       );
     });
   }
 
+  // 다이얼로그를 표시하는 함수
+  void _showAddButtonDialog(Map<String, dynamic> result) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return PlaceSaveDialog(
+          result: result,
+          onAdd: (selectedList) {
+            // 선택된 리스트를 받음
+            _addMarker(
+              LatLng(result['latitude'], result['longitude']),
+              result['address'], // result.address를 사용
+              result['name'], // result.name을 제목으로 사용
+              selectedList, // 선택된 리스트 추가
+            );
+          },
+        );
+      },
+    );
+  }
 
   //search 한거 지도로 위치 옮김
   Future<void> _openSearchDetailScreen() async {
@@ -236,16 +330,13 @@ class _NearbyScreenState extends State<NearbyScreen> {
     if (result != null) {
       final latitude = result['latitude'];
       final longitude = result['longitude'];
-      final name = result['name'];
 
-      mapController.animateCamera(
-        CameraUpdate.newLatLng(LatLng(latitude, longitude))
-      );
+      mapController
+          .animateCamera(CameraUpdate.newLatLng(LatLng(latitude, longitude)));
 
-      _addMarker_search(LatLng(latitude, longitude), name);
+      _addMarker_search(result);
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -253,20 +344,20 @@ class _NearbyScreenState extends State<NearbyScreen> {
       children: [
         Container(
           child: GoogleMap(
-            onMapCreated: _onMapCreated,
-            initialCameraPosition: CameraPosition(
-              target: _center,
-              zoom: 5.0,
-            ),
-            markers: isBookMarkView ? _markers : <Marker>{},
-            myLocationEnabled: true,
-            // 사용자 위치 표시
-            myLocationButtonEnabled: false,
-            // 사용자 위치
-            zoomControlsEnabled: false,
-            //onTap: isBookMarkView? _showMarkerDialog : _onMapTap, // 지도 탭 시 다이얼로그 표시
-            onTap: _showMarkerDialog  // 지도 탭 시 다이얼로그 표시
-          ),
+              onMapCreated: _onMapCreated,
+              initialCameraPosition: CameraPosition(
+                target: _center,
+                zoom: 5.0,
+              ),
+              markers: isBookMarkView ? _markers : <Marker>{},
+              myLocationEnabled: true,
+              // 사용자 위치 표시
+              myLocationButtonEnabled: false,
+              // 사용자 위치
+              zoomControlsEnabled: false,
+              //onTap: isBookMarkView? _showMarkerDialog : _onMapTap, // 지도 탭 시 다이얼로그 표시
+              onTap: _showMarkerDialog // 지도 탭 시 다이얼로그 표시
+              ),
         ),
         Positioned(
           right: 10.0,
@@ -297,8 +388,7 @@ class _NearbyScreenState extends State<NearbyScreen> {
               ),
             ),
           ),
-        )
-        ,
+        ),
         Positioned(
           bottom: 50.0,
           right: 10.0,
@@ -357,7 +447,7 @@ class _NearbyScreenState extends State<NearbyScreen> {
               padding: EdgeInsets.symmetric(horizontal: 16),
               // 아이콘과 텍스트의 좌우 간격
               decoration: BoxDecoration(
-                color: isDarkMode? Colors.grey :  Colors.white,
+                color: isDarkMode ? Colors.grey : Colors.white,
                 borderRadius: BorderRadius.all(Radius.circular(20)),
                 boxShadow: [
                   BoxShadow(
@@ -373,14 +463,17 @@ class _NearbyScreenState extends State<NearbyScreen> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.search, color: isDarkMode? Colors.white : Colors.grey), // 서치 아이콘 추가
-                      const SizedBox(width: 8), // 아이콘과 텍스트 간격
+                      Icon(Icons.search,
+                          color: isDarkMode ? Colors.white : Colors.grey),
+                      // 서치 아이콘 추가
+                      const SizedBox(width: 8),
+                      // 아이콘과 텍스트 간격
                       Text(
                         '위치 검색',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: isDarkMode? Colors.white :  Colors.grey,
+                          color: isDarkMode ? Colors.white : Colors.grey,
                         ),
                       ),
                     ],
