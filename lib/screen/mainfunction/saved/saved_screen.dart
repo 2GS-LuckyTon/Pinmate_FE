@@ -13,8 +13,7 @@ class _SavedScreenState extends State<SavedScreen> {
   // 더미 데이터 리스트 생성
   final List<Map<String, dynamic>> savedItems = [
     {
-      'icon': Icons.location_on_outlined,
-      'color': Colors.pink,
+      'color': 20,
       'title': '경주',
       'locationCount': 32,
       'sharedCount': 122,
@@ -22,8 +21,7 @@ class _SavedScreenState extends State<SavedScreen> {
       'reviewChecked': false, // 리뷰 미작성
     },
     {
-      'icon': Icons.location_on_outlined,
-      'color': Colors.pink,
+      'color': 20,
       'title': '서울',
       'locationCount': 32,
       'sharedCount': 61,
@@ -31,8 +29,7 @@ class _SavedScreenState extends State<SavedScreen> {
       'reviewChecked': true, // 내 리스트는 리뷰 속성 필요 없음
     },
     {
-      'icon': Icons.location_on_outlined,
-      'color': Colors.amber,
+      'color': 100,
       'title': '맛방대지도',
       'locationCount': 32,
       'sharedCount': 61,
@@ -139,8 +136,10 @@ class _SavedScreenState extends State<SavedScreen> {
 
   // 리스트 아이템을 생성하는 메서드
   Widget buildListItem(Map<String, dynamic> item) {
+    double hue = item['color'] is int ? (item['color'] as int).toDouble() : 0.0;
+    Color color = HSVColor.fromAHSV(1.0, hue, 1.0, 1.0).toColor(); // Create color from hue
     return ListTile(
-      leading: Icon(item['icon'], color: item['color']),
+      leading: Icon(Icons.location_on_outlined, color: color),
       title: Text(item['title']),
       subtitle: Row(
         children: [
