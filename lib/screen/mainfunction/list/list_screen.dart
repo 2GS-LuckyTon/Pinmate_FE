@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../main_screen.dart';
 import 'list_detail_screen.dart';
 import 'tag_list_screen.dart'; // TagListScreen import
@@ -12,11 +13,11 @@ class ListScreen extends StatefulWidget {
 
 class _ListScreenState extends State<ListScreen> {
   final List<String> categories = ["술집", "맛집", "카페", "여행지", "기타"];
-  final List<Map<String, dynamic>> hotList = [
-    {"title": "Title", "content": "content", "scrap": 500},
-    {"title": "Title", "content": "content", "scrap": 500},
-    {"title": "Title", "content": "content", "scrap": 500},
-    {"title": "Title", "content": "content", "scrap": 500},
+  final List<Map<String, dynamic>> Lists = [
+    {"title": "Title", "subTitle": "ddkdkdk", "sharedCount": 500, "color": Colors.blue},
+    {"title": "Title", "subTitle": "zzzzz", "sharedCount": 200, "color": Colors.yellow},
+    {"title": "Title", "subTitle": "ddddddd", "sharedCount": 400, "color": Colors.red},
+    {"title": "Title", "subTitle": "zz", "sharedCount": 100, "color": Colors.blue},
   ];
 
   @override
@@ -28,6 +29,7 @@ class _ListScreenState extends State<ListScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 검색 바
+            SizedBox(height: 0.1.sw),
             TextField(
               decoration: InputDecoration(
                 hintText: '리스트 검색',
@@ -79,28 +81,27 @@ class _ListScreenState extends State<ListScreen> {
             SizedBox(height: 20),
 
             // Hot list 제목
-            Text("hot list", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text("Top 20", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
 
             // Hot list 목록 (무한 스크롤 구현 가능)
             Expanded(
               child: ListView.builder(
-                itemCount: hotList.length,
+                itemCount: Lists.length,
                 itemBuilder: (context, index) {
+                  final hotItem = Lists[index];
+
                   return ListTile(
-                    leading: Container(
-                      height: 50,
-                      width: 50,
-                      color: Colors.grey[300],
-                    ),
-                    title: Text(hotList[index]["title"]),
-                    subtitle: Text(hotList[index]["content"]),
+                    leading:
+                    Icon(Icons.location_on_outlined, color: hotItem["color"],size: 30,),
+                    title: Text(hotItem["title"] ?? "Unknown Title"), // Default title if null
+                    subtitle: Text(hotItem["subTitle"] ?? "Unknown subTitle"), // Default tag if null
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.bookmark_outline),
+                        Icon(Icons.share_outlined),
                         SizedBox(width: 5),
-                        Text(hotList[index]["scrap"].toString()),
+                        Text(hotItem["sharedCount"]?.toString() ?? "0"), // Default to "0" if null
                       ],
                     ),
                     onTap: () {

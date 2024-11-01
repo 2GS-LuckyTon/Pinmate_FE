@@ -14,6 +14,7 @@ Future<List<Map<String, dynamic>>> getNearbyPlaces(double lat, double lng, {Stri
 
   if (response.statusCode == 200) {
     final data = json.decode(response.body);
+    print(data['id']);
     // 이름, 주소, 위도, 경도가 포함된 리스트 반환
     return (data['results'] as List).map((place) {
       return {
