@@ -40,6 +40,7 @@ dependencies:
   http: ^0.13.5
   flutter_screenutil: ^5.8.4
   location: ^7.0.1
+  shared_preferences: ^2.3.2
 
 dev_dependencies:
   flutter_test:
