@@ -4,6 +4,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import '../signup/signup.dart'; // 회원가입 페이지가 있는 위치에 따라 import 경로를 수정하세요.
+import '../main_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class LoginScreen extends StatelessWidget {
   final TextEditingController _idController = TextEditingController();
@@ -87,17 +90,35 @@ class __FormContentState extends State<_FormContent> {
           },
           body: jsonEncode(<String, String>{
             'id': id,
-            'password': password,
+            'password': password
           }),
         );
 
         if (response.statusCode == 200) {
           final responseData = jsonDecode(response.body);
-          print('Login successful: $responseData');
+
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('session_id', responseData['session_id']);
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const MainScreen()),
+          );
         } else {
-          print('Failed to login: ${response.statusCode}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('로그인 실패')),
+          );
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const MainScreen()),
+          );
         }
       } catch (e) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainScreen()),
+        );
         print('Error: $e');
       }
     }

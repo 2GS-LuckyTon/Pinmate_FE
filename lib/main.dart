@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import './screen/main_screen.dart';
 import './screen/login/login.dart';
-import './screen/signup/signup.dart';
 
 void main() {
   runApp(const Main());
@@ -29,19 +28,14 @@ class Main extends StatelessWidget {
             future: _checkSession(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator()); // 스피너 로딩 화면
+                return const Center(child: CircularProgressIndicator());
               } else if (snapshot.hasData && snapshot.data == true) {
-                return MainScreen();
+                return  MainScreen();
               } else {
                 return LoginScreen();
               }
             },
           ),
-          // routes: {
-          //   '/main_screen': (context) => MainScreen(),
-          //   '/login': (context) => LoginScreen(),
-          //   '/signup': (context) => SignupScreen(),
-          // },
         );
       },
     );
