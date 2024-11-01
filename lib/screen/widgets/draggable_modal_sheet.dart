@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_map_app/main.dart';
 import 'package:flutter/cupertino.dart';
+import '../mainfunction/list/list_detail_screen.dart';
 import '../mainfunction/saved/make_list_screen.dart';
 
 class DraggableModalSheet extends StatelessWidget {
@@ -87,11 +88,11 @@ class DraggableModalSheet extends StatelessWidget {
                 },
               ),
               if (myList.isNotEmpty) ...[
-                ...myList.map((item) => buildListItem(item)).toList(),
+                ...myList.map((item) => buildListItem(context,item)).toList(),
               ],
               // 상대 리스트 섹션
               if (otherList.isNotEmpty) ...[
-                ...otherList.map((item) => buildListItem(item)).toList(),
+                ...otherList.map((item) => buildListItem(context,item)).toList(),
               ],
             ],
           ),
@@ -103,8 +104,8 @@ class DraggableModalSheet extends StatelessWidget {
 
 
 
-// 리스트 아이템을 생성하는 메서드
-Widget buildListItem(Map<String, dynamic> item) {
+// 리스트 아이템 누르기
+Widget buildListItem(BuildContext context,Map<String, dynamic> item) {
   return ListTile(
     leading: Icon(item['icon'], color: item['color']),
     title: Text(item['title']),
@@ -118,7 +119,12 @@ Widget buildListItem(Map<String, dynamic> item) {
       ],
     ),
     onTap: () {
-      // 리스트 항목 선택 시 동작
+      Navigator.push(
+        context,
+        CupertinoPageRoute(
+          builder: (context) => ListDetailScreen(),
+        ),
+      );
     },
   );
 }
