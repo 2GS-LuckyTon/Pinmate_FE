@@ -23,7 +23,7 @@ class _PlaceSaveDialogState extends State<PlaceSaveDialog> {
     // Google Places API 결과에서 필요한 정보 추출
     final String name = widget.result['name'] ?? '알 수 없는 장소';
     final String address = widget.result['address'] ?? '주소 정보 없음';
-    final double? rating = widget.result['rating'] as double?;
+    final int? rating = widget.result['rating'];
     final int? userRatingsTotal = widget.result['user_ratings_total'];
     final String? phoneNumber = widget.result['phoneNumber'];
 

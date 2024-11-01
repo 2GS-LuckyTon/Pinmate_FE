@@ -52,15 +52,6 @@ class _SavedScreenState extends State<SavedScreen> {
         'mymine': true, // 내꺼
         'reviewChecked': true, // 내 리스트는 리뷰 속성 필요 없음
       },
-      {
-        'id':3,
-        'color': 100,
-        'title': '맛방대지도',
-        'locationCount': 32,
-        'sharedCount': 61,
-        'mymine': false, // 상대꺼
-        'reviewChecked': true, // 리뷰 작성 완료
-      },
     ];
   }
 
