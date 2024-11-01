@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 // Define a list of hues for indexed access
-const List<double> hueValues = [20.0, 60.0, 100.0, 140.0, 180.0, 220.0, 260.0, 300.0];
+const List<int> hueValues = [20, 60, 100, 140, 180, 220, 260, 300];
 const List<Color> hueColors = [
   Color(0xFFD68A2B), // 20
   Color(0xFFE8D92B), // 60
@@ -13,13 +13,15 @@ const List<Color> hueColors = [
   Color(0xFF5C5EE8), // 260
   Color(0xFFC77DFF), // 300
 ];
-// Function to retrieve hue from index
-double getHueByIndex(int index) {
-  return hueValues[index % hueValues.length];
-}
 
-Color getColorByIndex(int index) {
-  return hueColors[index % hueColors.length];
+// Function to retrieve color based on the hue value
+Color getColorFromHue(int hue) {
+  int index = hueValues.indexOf(hue); // Find the index of the hue value
+  if (index != -1) {
+    return hueColors[index];
+  } else {
+    return Colors.grey; // Default color if hue is not found
+  }
 }
 
 class ListDetailScreen extends StatefulWidget {
@@ -40,7 +42,7 @@ class _ListDetailScreenState extends State<ListDetailScreen> {
       'title': '경주',
       'locationCount': 32,
       'sharedCount': 122,
-      'colorIndex': 0, // Use index for color selection
+      'color': 20, // Specify hue value directly
       'places': [
         {
           'title': '경주 대릉원',
@@ -60,7 +62,7 @@ class _ListDetailScreenState extends State<ListDetailScreen> {
       'title': '서울',
       'locationCount': 32,
       'sharedCount': 61,
-      'colorIndex': 1,
+      'color': 60, // Specify hue value directly
       'places': [
         {
           'title': '인천대 공학대학',
@@ -100,10 +102,10 @@ class _ListDetailScreenState extends State<ListDetailScreen> {
   }
 
   void _initializeMarkers() {
-    final colorIndex = currentList['colorIndex'];
-    final hue = getHueByIndex(colorIndex); // Get hue as a double
+    final colorHue = currentList['color'];
+    final markerColor = getColorFromHue(colorHue);
 
-    print("Hue for color index $colorIndex: $hue");
+    print("Color for ${currentList['title']} (hue $colorHue): $markerColor");
 
     Set<Marker> markers = placesInCurrentList.map((place) {
       String description = place['description'] ?? 'No description available';
@@ -115,7 +117,7 @@ class _ListDetailScreenState extends State<ListDetailScreen> {
         markerId: MarkerId(place['title']),
         position: LatLng(place['latitude'], place['longitude']),
         infoWindow: InfoWindow(title: place['title'], snippet: description),
-        icon: BitmapDescriptor.defaultMarkerWithHue(hue), // Use the hue value directly
+        icon: BitmapDescriptor.defaultMarkerWithHue(colorHue.toDouble()), // Convert hue to double for BitmapDescriptor
       );
     }).toSet();
 
@@ -221,7 +223,8 @@ class _ListDetailScreenState extends State<ListDetailScreen> {
                                       truncatedDescription = truncatedDescription.substring(0, 20) + '...';
                                     }
 
-                                    final itemColor = getColorByIndex(currentList['colorIndex']);
+                                    // Retrieve the color for each list item
+                                    final itemColor = getColorFromHue(currentList['color']);
 
                                     return ListTile(
                                       leading: Icon(Icons.location_pin, color: itemColor),

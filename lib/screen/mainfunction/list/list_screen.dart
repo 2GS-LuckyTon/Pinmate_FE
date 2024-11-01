@@ -4,7 +4,7 @@ import 'list_detail_screen.dart';
 import 'tag_list_screen.dart';
 
 // Define a list of hues and colors for indexed access
-const List<double> hueValues = [20.0, 60.0, 100.0, 140.0, 180.0, 220.0, 260.0, 300.0];
+const List<int> hueValues = [20, 60, 100, 140, 180, 220, 260, 300];
 const List<Color> hueColors = [
   Color(0xFFD68A2B), // Hue 20
   Color(0xFFE8D92B), // Hue 60
@@ -16,9 +16,14 @@ const List<Color> hueColors = [
   Color(0xFFC77DFF), // Hue 300
 ];
 
-// Function to retrieve color from index
-Color getColorByIndex(int index) {
-  return hueColors[index % hueColors.length];
+// Function to retrieve color from hue value directly
+Color getColorFromHue(int hue) {
+  int index = hueValues.indexOf(hue); // Find the index of the hue value
+  if (index != -1) {
+    return hueColors[index];
+  } else {
+    return Colors.grey; // Default color if hue is not found
+  }
 }
 
 class ListScreen extends StatefulWidget {
@@ -43,7 +48,7 @@ class _ListScreenState extends State<ListScreen> {
       "subTitle": "핫한 관광지",
       "locationCount": 32,
       "sharedCount": 122,
-      "colorIndex": 0, // Color index for custom hues
+      "color": 20, // Specify hue value directly
       "tags": ["여행지"],
       "places": [
         {"title": "경주 대릉원", "latitude": 35.8352, "longitude": 129.2190, "description": "경주의 대표적인 고분군"},
@@ -55,7 +60,7 @@ class _ListScreenState extends State<ListScreen> {
       "subTitle": "도심 명소",
       "locationCount": 32,
       "sharedCount": 61,
-      "colorIndex": 1,
+      "color": 60,
       "tags": ["여행지", "맛집"],
       "places": [
         {"title": "인천대 공학대학", "latitude": 37.3757, "longitude": 126.6323, "description": "공학 분야 교육의 중심지"},
@@ -67,7 +72,7 @@ class _ListScreenState extends State<ListScreen> {
       "subTitle": "맛집 가이드",
       "locationCount": 32,
       "sharedCount": 61,
-      "colorIndex": 2,
+      "color": 100,
       "tags": ["맛집"],
       "places": []
     },
@@ -147,7 +152,7 @@ class _ListScreenState extends State<ListScreen> {
                 itemCount: lists.length,
                 itemBuilder: (context, index) {
                   final listItem = lists[index];
-                  final itemColor = getColorByIndex(listItem["colorIndex"] ?? 0); // Retrieve color based on index
+                  final itemColor = getColorFromHue(listItem["color"]); // Use hue value directly to get color
 
                   return ListTile(
                     leading: Icon(Icons.location_pin, color: itemColor, size: 30),
