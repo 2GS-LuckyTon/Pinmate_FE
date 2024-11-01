@@ -5,7 +5,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import './search_detail_screen.dart';
-import '../saved/saved_screen.dart';
 
 class NearbyScreen extends StatefulWidget {
   const NearbyScreen({super.key});
@@ -280,17 +279,17 @@ class _NearbyScreenState extends State<NearbyScreen> {
                   color: Colors.grey.withOpacity(0.5),
                   spreadRadius: 5,
                   blurRadius: 7,
-                  offset: Offset(0, 3), // changes position of shadow
+                  offset: Offset(0, 3),
                 ),
               ],
             ),
             child: FloatingActionButton(
-              mini: true, // 버튼 사이즈를 줄임
+              mini: true,
               onPressed: () {
                 setState(() {
-                  isBookMarkView=!isBookMarkView;
+                  isBookMarkView = !isBookMarkView;
                 });
-              }, //정정해야야야야야야야
+              },
               backgroundColor: isBookMarkView ? Colors.grey : Colors.white,
               child: Icon(
                 Icons.star,
@@ -298,9 +297,10 @@ class _NearbyScreenState extends State<NearbyScreen> {
               ),
             ),
           ),
-        ),
+        )
+        ,
         Positioned(
-          bottom: 20.0,
+          bottom: 50.0,
           right: 10.0,
           child: Column(
             children: [
@@ -357,7 +357,7 @@ class _NearbyScreenState extends State<NearbyScreen> {
               padding: EdgeInsets.symmetric(horizontal: 16),
               // 아이콘과 텍스트의 좌우 간격
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDarkMode? Colors.grey :  Colors.white,
                 borderRadius: BorderRadius.all(Radius.circular(20)),
                 boxShadow: [
                   BoxShadow(
@@ -370,22 +370,22 @@ class _NearbyScreenState extends State<NearbyScreen> {
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
+                children: [
                   Row(
                     children: [
-                      Icon(Icons.search, color: Colors.grey), // 서치 아이콘 추가
-                      SizedBox(width: 8), // 아이콘과 텍스트 간격
+                      Icon(Icons.search, color: isDarkMode? Colors.white : Colors.grey), // 서치 아이콘 추가
+                      const SizedBox(width: 8), // 아이콘과 텍스트 간격
                       Text(
                         '위치 검색',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: Colors.grey,
+                          color: isDarkMode? Colors.white :  Colors.grey,
                         ),
                       ),
                     ],
                   ),
-                  Icon(
+                  const Icon(
                     Icons.account_circle_outlined,
                     color: Colors.red,
                     size: 30,

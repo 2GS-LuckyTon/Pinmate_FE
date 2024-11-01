@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:shared_map_app/screen/widgets/draggable_modal_sheet.dart';
 import './mainfunction/nerarby/nearby_screen.dart';
 import './mainfunction/saved/saved_screen.dart';
 import './mainfunction/list/list_screen.dart';
 import './mainfunction/profile/profile_screen.dart';
+import 'package:shared_map_app/screen/widgets/draggable_modal_sheet.dart';
+
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -14,7 +15,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int currentIndex = 0;
 
-  // 각 탭에 연결된 화면 리스트
+  // Screens for each tab
   final List<Widget> screens = [
     NearbyScreen(),
     SavedScreen(),
