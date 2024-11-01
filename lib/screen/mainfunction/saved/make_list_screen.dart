@@ -13,15 +13,24 @@ class _MakeListScreenState extends State<MakeListScreen> {
   final TextEditingController _titleController = TextEditingController();
   Color? selectedColor;
   final List<Color> colorOptions = [
-    Colors.red, Colors.blue, Colors.green, Colors.yellow,
-    Colors.orange, Colors.purple, Colors.grey, Colors.greenAccent,
+    Color(0xFFD68A2B), // 20
+    Color(0xFFE8D92B), // 60
+    Color(0xFF5CCF4E), // 100
+    Color(0xFF2FBC6D), // 140
+    Color(0xFF28B2B5), // 180
+    Color(0xFF2B98E8), // 220
+    Color(0xFF5C5EE8), // 260
+    Color(0xFFC77DFF), // 300
   ];
   String? errorText;
 
+  final List<String> tags = ["술집", "맛집", "카페", "여행지", "기타"];
+  String? _selectedTag;
+
   Future<void> _createList() async {
-    if (_titleController.text.isEmpty) {
+    if (_titleController.text.isEmpty || _selectedTag == null) {
       setState(() {
-        errorText = "빈칸입니다!";
+        errorText = _titleController.text.isEmpty ? "빈칸입니다!" : "태그를 선택하세요!";
       });
       return;
     }
@@ -31,12 +40,14 @@ class _MakeListScreenState extends State<MakeListScreen> {
     });
 
     final chosenColor = selectedColor?.value.toString() ?? Colors.blue.value.toString();
+
     // POST request
     final response = await http.post(
       Uri.parse('https://your-api-url.com/api/list'),
       body: {
         'title': _titleController.text,
         'color': chosenColor,
+        'tag': _selectedTag!,
       },
     );
 
@@ -75,7 +86,32 @@ class _MakeListScreenState extends State<MakeListScreen> {
                     errorText: errorText,
                   ),
                 ),
-                SizedBox(height: 40),
+                SizedBox(height: 20),
+                Text("태그 선택", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  children: tags.map((tag) {
+                    final isSelected = _selectedTag == tag;
+                    return ChoiceChip(
+                      label: Text(tag),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        setState(() {
+                          _selectedTag = selected ? tag : null;
+                        });
+                      },
+                      selectedColor: Colors.blueAccent,
+                      backgroundColor: Colors.grey[200],
+                      labelStyle: TextStyle(
+                        fontSize: 13,
+                        color: isSelected ? Colors.white : Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    );
+                  }).toList(),
+                ),
+                SizedBox(height: 20),
                 Text("색상 선택", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 SizedBox(height: 20),
                 Center(
