@@ -1,6 +1,28 @@
 import 'package:flutter/material.dart';
 import 'list_detail_screen.dart';
 
+// Define hue values and colors
+const List<double> hueValues = [20.0, 60.0, 100.0, 140.0, 180.0, 220.0, 260.0, 300.0];
+const List<Color> hueColors = [
+  Color(0xFFD68A2B), // 20
+  Color(0xFFE8D92B), // 60
+  Color(0xFF5CCF4E), // 100
+  Color(0xFF2FBC6D), // 140
+  Color(0xFF28B2B5), // 180
+  Color(0xFF2B98E8), // 220
+  Color(0xFF5C5EE8), // 260
+  Color(0xFFC77DFF), // 300
+];
+
+// Functions to retrieve hue and color from index
+double getHueByIndex(int index) {
+  return hueValues[index % hueValues.length];
+}
+
+Color getColorByIndex(int index) {
+  return hueColors[index % hueColors.length];
+}
+
 class TagListScreen extends StatefulWidget {
   final String category;
   final List<Map<String, dynamic>> lists;
@@ -15,7 +37,6 @@ class _TagListScreenState extends State<TagListScreen> with SingleTickerProvider
   late TabController _tabController;
   int selectedTagIndex = 0;
   List<Map<String, dynamic>> filteredList = [];
-
   final List<String> tags = ["술집", "맛집", "카페", "여행지", "기타"];
 
   @override
@@ -135,8 +156,15 @@ class _TagListScreenState extends State<TagListScreen> with SingleTickerProvider
       itemCount: list.length,
       itemBuilder: (context, index) {
         final item = list[index];
+        final colorIndex = item["colorIndex"] ?? 0; // Default index if not specified
+        final itemColor = getColorByIndex(colorIndex);
+        final itemHue = getHueByIndex(colorIndex);
+
+        // Log the hue for each item color in 20.0, 60.0 format
+        print("Hue for ${item['title']} (color index $colorIndex): $itemHue");
+
         return ListTile(
-          leading: Icon(Icons.location_pin, color: item["color"], size: 30),
+          leading: Icon(Icons.location_pin, color: itemColor, size: 30),
           title: Text(item["title"]),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
