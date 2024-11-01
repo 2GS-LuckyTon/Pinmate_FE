@@ -25,14 +25,14 @@ class LoginScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(height: 0.2.sh), // 상단에 여백 추가
+                  SizedBox(height: 0.1.sh), // 상단에 여백 추가
                   const _Logo(),
                   SizedBox(height: 20.h), // 로고와 폼 사이의 간격
                   _FormContent(
                     idController: _idController,
                     passwordController: _passwordController,
                   ),
-                  SizedBox(height: 0.1.sh), // 하단 여백 추가
+                  SizedBox(height: 1.0.sh), // 하단 여백 추가
                 ],
               ),
             ),
